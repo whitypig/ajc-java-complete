@@ -222,6 +222,20 @@ public class Tags {
                     logInfo(e.getMessage());
                 }catch (Throwable ex) {log(ex);}
             }
+            //populate classItem.superClassItem
+            for (ClassItem ci :classes){
+                try {
+                    Class superclass=ci.cls.getSuperclass();
+                    if (superclass!=null){
+                        for (ClassItem ci2: classes){
+                            if (superclass.equals(ci2.cls)){
+                                ci.superClassItem=ci2;
+                                break;
+                            }
+                        }
+                    }
+                }catch (Throwable ex) {log(ex);}
+            }
 
             Collections.sort(pkgs);
             Collections.sort(classes);
@@ -596,6 +610,7 @@ class ClassItem implements Comparable <ClassItem> {
     int memStartLineNum;
     int memEndLineNum;
     Class cls;
+    ClassItem superClassItem;
     PackageItem pkgItem;
     List<MemberItem> members;
     public int compareTo(ClassItem cItem){
@@ -618,7 +633,7 @@ class ClassItem implements Comparable <ClassItem> {
         return false;
     }
     public String toString(){
-        return this.name+"`"+this.pkgItem.lineNum+"`"+this.memStartLineNum+"`"+this.memEndLineNum;
+        return this.name+"`"+this.pkgItem.lineNum+"`"+this.memStartLineNum+"`"+this.memEndLineNum+"`"+(this.superClassItem!=null?this.superClassItem.lineNum:"");
     }
 
 
