@@ -223,6 +223,9 @@ public class Tags {
                 }catch (Throwable ex) {log(ex);}
             }
             //populate classItem.superClassItem
+            // for example :Frame`9`7335`7662`361
+            // the fifth field :361 is the superClass of current class,(361 is a line number)
+            //if current class hasnt superClass ,then the fifth field is empth space
             for (ClassItem ci :classes){
                 try {
                     Class superclass=ci.cls.getSuperclass();
