@@ -1764,9 +1764,12 @@ find out the type name."
   "Return class name candidates whose class names begin with the
 value of `current-word'."
   (when (ajc-is-available-4-complete-class-p)
-    (mapcar (lambda (class-item)
-              (propertize (car class-item) 'view (ajc-class-to-string class-item t)))
+    (mapcar #'ajc-propertize-class-item
             (ajc-complete-class-with-cache ajc-current-class-prefix-4-complete-class))))
+
+(defun ajc-propertize-class-item (class-item)
+  "Return a propertized class name string."
+  (propertize (car class-item) 'view (ajc-class-to-string class-item t)))
 
 (defun ajc-complete-class-with-cache (class-prefix &optional package-name)
   "Return a list of class-items which start with CLASS-PREFIX.
