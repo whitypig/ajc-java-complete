@@ -496,6 +496,7 @@ item."
             (setq candidate (propertize field-short-string 'view field-full-string)))
         (let ((method-full-string (ajc-method-to-string field-or-method-item t))
               (method-short-string (ajc-method-to-string field-or-method-item nil)))
+          ;; this is a method
           (setq candidate
                 (propertize method-short-string
                             'view method-full-string
@@ -1236,7 +1237,9 @@ with PREFIX-STRING."
   (when (and ac-prefix (string-match "^[a-zA-Z][a-zA-Z0-9._]+" ac-prefix))
     (or (ajc-package-candidates ac-prefix)
         (mapcar (lambda (e)
-                  (concat ac-prefix e))
+                  (let ((cand (concat ac-prefix e)))
+                    (set-text-properties 0 (length cand) (text-properties-at 0 e) cand)
+                    cand))
                 (mapcar #'ajc-method-item-to-candidate
                         (ajc-fqn-candidates-1 ac-prefix))))))
 
