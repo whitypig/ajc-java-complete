@@ -2,9 +2,11 @@
 (require 'ert)
 (require 'cl)
 
-(defvar test-ajc-someclass-tagfile "test/someclass.tag")
-(defvar test-ajc-junit-tagfile "test/junit.ajctag")
-(defvar test-ajc-javart-tagifle "test/javart.tag")
+(defconst test-ajc-someclass-tagfile "test/someclass.tag")
+(defconst test-ajc-junit-tagfile "test/junit.ajctag")
+(defconst test-ajc-javart-tagifle "test/javart.tag")
+(defconst test-ajc-mock-method-item
+  '("getStringArray" "java.lang.String[]" ("java.util.ArrayList") ("java.lang.Exception")))
 
 (defun test-ajc-unpropertize-text (text prop-lst)
   "Return unpropertized text."
@@ -107,7 +109,8 @@
    (lambda ()
      (should
       (equal '("getStrField()" "getStringArray(java.util.ArrayList)")
-             (ajc-complete-method-candidates-1 '("SomeClass" "." "getStr")))))))
+             (ajc-complete-method-candidates-1 '("SomeClass" "." "getStr"))))
+     (print (ajc-complete-method-candidates-1 '("SomeClass" "." "getStringA"))))))
 
 (ert-deftest test-ajc-find-class-first-check-imported ()
   (test-ajc-fixture
@@ -265,6 +268,10 @@
    (equal '("(" "a" "+" "b" ")" ".")
           (ajc-remove-unnecessary-heading-part
            '("(" "a" "+" "b" ")" "."))))
+  (should
+   (equal '("_field" ".")
+          (ajc-remove-unnecessary-heading-part
+           '("." "_field" "."))))
   )
 
 (ert-deftest test-ajc-guess-type-of-factor ()
@@ -702,6 +709,8 @@
      (should
       (equal '(("getSomeClassObj" ("SomeClass" 0 7 21 39) "" ""))
              (ajc-find-members '("AnotherClass" 0 7 10 21) "getSomeClassO")))
+     (print
+      (ajc-find-members '("SomeClass" 0 7 21 39) "getStringArr"))
      (should
       (equal '(("toString" "java.lang.String" "" ""))
              (ajc-find-members
@@ -1097,3 +1106,12 @@
                                                 (cadr ajc-plain-method-tables)
                                                 50))))
      )))
+
+(ert-deftest test-ajc-method-to-yasnippet-template ()
+  (let ((method-item '("getStringArray"
+                       "java.lang.String[]"
+                       ("java.util.ArrayList")
+                       ("java.lang.Exception"))))
+    (string=
+     "getStringArray(${1:java.util.ArrayList})$0"
+     (ajc-method-to-yasnippet-template method-item))))

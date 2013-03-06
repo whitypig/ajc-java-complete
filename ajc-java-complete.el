@@ -2250,7 +2250,9 @@ is \"\).\"."
                              ":")
           when (member elt operators)
           return (nthcdr (1+ i) lst)
-          finally (return lst))))
+          finally (return (if (string= "." (car lst))
+                              (cdr lst)
+                            lst)))))
 
 (defun ajc-guess-type-of-factor (lst)
   "LST must be of form '(expression)'."
