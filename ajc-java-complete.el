@@ -2140,11 +2140,17 @@ this function will remove anything between ( and )  ,so only
       ;; remove return keyword
       (setq line-string (replace-regexp-in-string "\\breturn\\b" "" line-string))
       ;; remove this keyword
-      (setq line-string (replace-regexp-in-string "\\this\\b" "" line-string))
+      (setq line-string (replace-regexp-in-string "\\bthis\\b" "" line-string))
       ;; remove unary operators
       (setq line-string (replace-regexp-in-string "\\(\\+\\+\\|--\\)"
                                                   " "
                                                   line-string))
+      ;; remove heading spaces
+      (setq line-string
+            (replace-regexp-in-string "^[[:space:]]+" "" line-string))
+      ;; remove the heading dot
+      (setq line-string
+            (replace-regexp-in-string "^\\." "" line-string))
       ;; remove the part before ':'
       ;; we consider the following situations.
       ;; "for (String s : str.time().)" or
