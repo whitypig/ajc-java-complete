@@ -10,11 +10,7 @@
 
 (defun test-ajc-unpropertize-text (text prop-lst)
   "Return unpropertized text."
-  (remove-list-of-text-properties 0
-                                  (length text)
-                                  prop-lst
-                                  text)
-  text)
+  (substring-no-properties text))
 
 (defun test-ajc-fixture (tag-file-list body)
   (let ((ajc-is-running nil)
@@ -451,7 +447,10 @@
      (should
       (equal '("org.junit.Test")
              (or (ajc-package-candidates "org.junit.T")
-                 (caar (ajc-fqn-candidates-1 "org.junit.T"))))))))
+                 (caar (ajc-fqn-candidates-1 "org.junit.T")))))
+     (should
+      (equal '"assertNull"
+             (caar (ajc-fqn-candidates-1 "org.junit.Assert.assertNu")))))))
 
 (ert-deftest test-ajc-package-candidates ()
   (should

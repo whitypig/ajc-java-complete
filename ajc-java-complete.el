@@ -683,6 +683,7 @@ variables."
     (setq ajc-matched-class-items-cache nil)
     (setq ajc-previous-class-prefix nil)
     (setq ajc-package-in-tags-cache-tbl nil)
+    (setq ajc-plain-method-tables nil)
     ;; extract info from each tag file in ajc-tag-file-list
     (mapcar (lambda (filename)
               (ajc-init-1 filename))
@@ -690,10 +691,8 @@ variables."
     (setq ajc-two-char-tbl (ajc-sort-class ajc-tag-buffer-list))
     (setq ajc-package-in-tags-cache-tbl
           (ajc-build-package-in-tags-cache-tbl ajc-tag-buffer-list))
-    (ajc-load-or-build-plain-method-tables force)
-    (ajc-save-method-tables-cache)
-    (add-to-list 'ac-sources 'ac-source-ajc-plain-method))
-  (setq ajc-is-running t))
+    (ajc-init-plain-method-tables force)
+    (setq ajc-is-running t)))
 
 (defun ajc-init-1 (filename)
   (let ((fname (file-truename (expand-file-name filename)))
@@ -712,6 +711,12 @@ variables."
                        (ajc-get-lines-and-positions (get-buffer bname))
                        t))
       (message (format "warning: tag file %s cannot be found" fname)))))
+
+(defun ajc-init-plain-method-tables (&optional force)
+  (when ajc-use-plain-method-completion
+    (ajc-load-or-build-plain-method-tables force)
+    (ajc-save-method-tables-cache)
+    (add-to-list 'ac-sources 'ac-source-ajc-plain-method)))
 
 (defun ajc-build-package-in-tags-cache-tbl (tag-buffer-list)
   "Return a hash table of package names in each tag buffer in TAG-BUFFER-LIST.
@@ -773,6 +778,15 @@ The next completion is done without tag file FILENAME."
                (delete filename ajc-tag-file-list))
          (ajc-init t))))
 
+(defun ajc-update-tag-file (filename)
+  "Update completion info from updated ajc tag file FILENAME."
+  (interactive (list (completing-read "Updated tag file: "
+                                      ajc-tag-file-list
+                                      nil
+                                      t)))
+  (and (stringp filename)
+       (ajc-init t)))
+
 (defun ajc-build-plain-method-table (tag-buffer-list)
   (loop for tag-buffer in tag-buffer-list
         for ix from 0
@@ -826,8 +840,12 @@ The next completion is done without tag file FILENAME."
         (make-directory (expand-file-name ajc-method-table-cache-dir)))
       (cond
        ((file-exists-p pathname)
-        ;; we dont overwrite
-        nil)
+        (when (time-less-p (nth 5 (file-attributes pathname))
+                           (nth 5 (file-attributes (expand-file-name tag-filename))))
+          ;; if cache file is older than tag file, we update cache
+          (with-temp-file pathname
+            (let ((print-circle t))
+              (prin1 table (current-buffer))))))
        ((file-directory-p ajc-method-table-cache-dir)
           (with-temp-file pathname
             (let ((print-circle t))
@@ -836,20 +854,23 @@ The next completion is done without tag file FILENAME."
         (message "ajc-write-method-table-cache, cache dir doesnt exist"))))))
 
 (defun ajc-load-method-table-cache (tag-filename index)
-  "Load and Return a hash table from cache file if exists.
+  "Load and return a hash table from cache file if exists.
 Otherwise return nil."
   (multiple-value-bind (filename pathname)
       (ajc-construct-cache-filepath tag-filename)
-    (if (file-exists-p pathname)
-        (let* ((table nil))
+    (when (and (file-exists-p pathname)
+               (time-less-p (nth 5 (file-attributes (expand-file-name tag-filename)))
+                            (nth 5 (file-attributes (expand-file-name pathname)))))
+      ;; Load from cache When it exists and its modification time is
+      ;; newer than that of tag file.
+      (let* ((table nil))
           (with-current-buffer (find-file-noselect pathname)
             (goto-char (point-min))
             (message "Loading cache from %s..." pathname)
             (setq table (read (current-buffer)))
             (kill-buffer))
           (message "Loading cache from %s...done" pathname)
-          table)
-      nil)))
+          table))))
 
 (defun ajc-construct-cache-filepath (tag-filename)
   "Return cache file name and its full pathname."
@@ -1237,7 +1258,16 @@ with PREFIX-STRING."
   (when (and ac-prefix (string-match "^[a-zA-Z][a-zA-Z0-9._]+" ac-prefix))
     (or (ajc-package-candidates ac-prefix)
         (mapcar (lambda (e)
-                  (let ((cand (concat ac-prefix e)))
+                  ;; e is a non-fqn name,
+                  ;; i.e. "assertTrue" not "org.junit.Assert.assertThat"
+                  (let ((cand (concat
+                               (replace-regexp-in-string "[^.]+\\.\\([^.]+\\)$"
+                                                         ""
+                                                         ac-prefix
+                                                         nil
+                                                         nil
+                                                         1)
+                               e)zp))
                     (set-text-properties 0 (length cand) (text-properties-at 0 e) cand)
                     cand))
                 (mapcar #'ajc-method-item-to-candidate
