@@ -1351,9 +1351,11 @@ they haven't been imported."
                         "\\|native\\|synchronized\\|transient\\|volatile"
                         "\\|strictfp\\| \\|\t\\)*"
                         "[ \t]+"
+                        ;; return type
                         "\\(\\([a-zA-Z0-9_]\\|\\( *\t*< *\t*\\)"
                         "\\|\\( *\t*> *\t*\\)\\|\\( *\t*, *\t*\\)"
                         "\\|\\( *\t*\\[ *\t*\\)\\|\\(]\\)\\)+\\)"
+                        ;; method name and parameters
                         "[ \t\n\r]+[a-zA-Z0-9_]+[ \t]*(\\(.*\\))"
                         "[ \t\n\r]*"
                         "\\(throws[ \t]+\\([a-zA-Z0-9_, \t\n]*\\)\\)?"
@@ -1403,10 +1405,13 @@ they haven't been imported."
               (append matched-class-strings
                       (ajc-find-out-class-by-extends-notation)))
         ;; remove primitive type and remove duplicate item
-        (delete-dups matched-class-strings) (delete "" matched-class-strings)
-        (dolist (ele matched-class-strings)
-          (if (string-match "\\(int\\|float\\|double\\|long\\|short\\|char\\|byte\\|void\\|boolean\\|return\\|public\\|static\\|private\\|protected\\|abstract\\|final\\|native\\|package\\|new\\)" ele)
-              (delete ele matched-class-strings)))
+        (delete-dups matched-class-strings)
+        (setq matched-class-strings (delete "" matched-class-strings))
+        (setq matched-class-strings
+              (remove-if
+               (lambda (ele)
+                 (string-match "^\\(int\\|float\\|double\\|long\\|short\\|char\\|byte\\|void\\|boolean\\|return\\|public\\|static\\|private\\|protected\\|abstract\\|final\\|native\\|package\\|new\\)$" ele))
+               matched-class-strings))
         matched-class-strings))))
 
 (defun ajc-find-out-implemented-interfaces ()
