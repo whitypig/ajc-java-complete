@@ -1637,7 +1637,14 @@ using `y-or-n-p' to ask user to confirm."
       (while (re-search-forward "^import.*" nil t)
         (or beg-pos (setq beg-pos (line-beginning-position)))
         (setq end-pos (line-end-position))))
-    (sort-lines nil beg-pos end-pos)))
+    (sort-lines nil beg-pos end-pos)
+    ;; if there is no empty line between import lines and the following code,
+    ;; we insert an empty line there.
+    (save-excursion
+      (goto-char end-pos)
+      (forward-line 1)
+      (unless (re-search-forward "^$" (line-end-position) t)
+        (open-line 1)))))
 
 (defun ajc-find-out-import-line ()
   "Return a list of import statement lines.
