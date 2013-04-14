@@ -1009,7 +1009,7 @@ CLASS-NAME in tag file, import one of them first."
             (if (= (length matched-class-items) 1)
                 (setq matched-class-item (car matched-class-items))
               (setq matched-class-item
-                    (car (ajc-insert-import-at-head-of-source-file matched-class-items)))))))
+                    (car matched-class-items))))))
       ;;(message "Debug: class-name=%s, matched-class-item=%s" class-name matched-class-item)
       matched-class-item))))
 
