@@ -176,6 +176,10 @@
    (equal '("message" "." "getBody" "(" ")" ".")
           (ajc-split-line-4-complete-method
            "    for (String element : message.getBody().")))
+  (should
+   (equal '("if" "(" "f" ".")
+          (ajc-split-line-4-complete-method
+           "if (!f.")))
   )
 
 (ert-deftest test-ajc-parse-splited-line-4-complete-method ()

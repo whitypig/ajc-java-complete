@@ -2184,7 +2184,7 @@ this function will remove anything between ( and )  ,so only
       ;; remove this keyword
       (setq line-string (replace-regexp-in-string "\\bthis\\b" "" line-string))
       ;; remove unary operators
-      (setq line-string (replace-regexp-in-string "\\(\\+\\+\\|--\\)"
+      (setq line-string (replace-regexp-in-string "\\(\\+\\+\\|--\\|!\\)"
                                                   " "
                                                   line-string))
       ;; remove heading spaces
