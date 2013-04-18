@@ -2262,8 +2262,12 @@ is \"\).\"."
              (not (= (count ")" lst :test #'string=)
                      (count "(" lst :test #'string=))))
       (loop with ret = nil
+            with case-fold-search = nil
             with close-paren-cnt = 1
-            for elt in (cddr (reverse lst))
+            for elt in (if (equal '("(" ")" ".")
+                                  (nthcdr (- (length lst) 3) lst))
+                           (nthcdr 3 (reverse lst))
+                         (nthcdr 2 (reverse lst)))
             for cnt from 2
             if (zerop close-paren-cnt)
             do (return

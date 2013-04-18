@@ -118,68 +118,72 @@
              (ajc-find-class-first-check-imported "SomeClass"))))))
 
 (ert-deftest test-ajc-split-line-4-complete-method ()
+  ;; (should
+  ;;  (equal
+  ;;   '("System" "." "getProperty" "(" "str" "." "substring" "(" "3" ")" ")" "."
+  ;;     "to")
+  ;;   (ajc-split-line-4-complete-method "System.getProperty(str.substring(3)).to")))
+  ;; (should
+  ;;  (equal '("Obj" "(" ")" "." "r")
+  ;;         (ajc-split-line-4-complete-method "new Obj().r")))
+  ;; (should
+  ;;  (equal '("answer" ".")
+  ;;         (ajc-split-line-4-complete-method "if (answer.equals(\"Y\") || answer.")))
+  ;; (should
+  ;;  (equal '("(" "answer" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "if (answer.euqals(\"Y\")) && (answer.equals(\"N\")) || (answer.")))
+  ;; (should
+  ;;  (equal '("obj" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "++obj.")))
+  ;; (should
+  ;;  (equal
+  ;;   ;; '("ByteArrayInputStream" "(" "(" "String" "+" "System" "."
+  ;;   ;;   "getProperty" "(" "String" ")" ")" ".")
+  ;;   '("(" "String" "+" "System" "." "getProperty" "(" "String" ")" ")" ".")
+  ;;   (ajc-split-line-4-complete-method
+  ;;    "new ByteArrayInputStream((\"y\" + System.getProperty(\"line.separator\")).")))
+  ;; (should
+  ;;  (equal '("StringBuffer" "(" ")" ".")
+  ;;         (ajc-split-line-4-complete-method "new StringBuffer().")))
+  ;; (should
+  ;;  (equal '("Obj" "(" "String" ")" ".")
+  ;;         (ajc-split-line-4-complete-method "new Obj(\"arg\").")))
+  ;; (should
+  ;;  (equal '("(" "a" "+" "b" ")" ".")
+  ;;         (ajc-split-line-4-complete-method "new Obj((a + b).")))
+  ;; (should (equal
+  ;;          '("Obj" "(" "(" "a" "+" "b" ")" "." "method" "(" ")" ")" ".")
+  ;;          (ajc-split-line-4-complete-method "new Obj((a + b).method()).")))
+  ;; (should
+  ;;  (equal '("File" "(" "String" ")" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "new FileInputStream(new File(\"file\").")))
+  ;; (should
+  ;;  (equal '("ObjC" "(" ")" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "new ObjA(new ObjB(new ObjC().")))
+  ;; (should
+  ;;  (equal '("(" "String" "+" "String" ")" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "(\"a\" + \"b\").")))
+  ;; (should
+  ;;  (equal '("String" "." "trim" "(" ")" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "\"foo\".trim().")))
+  ;; (should
+  ;;  (equal '("message" "." "getBody" "(" ")" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "    for (String element : message.getBody().")))
+  ;; (should
+  ;;  (equal '("if" "(" "f" ".")
+  ;;         (ajc-split-line-4-complete-method
+  ;;          "if (!f.")))
   (should
-   (equal
-    '("System" "." "getProperty" "(" "str" "." "substring" "(" "3" ")" ")" "."
-      "to")
-    (ajc-split-line-4-complete-method "System.getProperty(str.substring(3)).to")))
-  (should
-   (equal '("Obj" "(" ")" "." "r")
-          (ajc-split-line-4-complete-method "new Obj().r")))
-  (should
-   (equal '("answer" ".")
-          (ajc-split-line-4-complete-method "if (answer.equals(\"Y\") || answer.")))
-  (should
-   (equal '("(" "answer" ".")
+   (equal '("icon" "getImage" "(" ")" ".")
           (ajc-split-line-4-complete-method
-           "if (answer.euqals(\"Y\")) && (answer.equals(\"N\")) || (answer.")))
-  (should
-   (equal '("obj" ".")
-          (ajc-split-line-4-complete-method
-           "++obj.")))
-  (should
-   (equal
-    ;; '("ByteArrayInputStream" "(" "(" "String" "+" "System" "."
-    ;;   "getProperty" "(" "String" ")" ")" ".")
-    '("(" "String" "+" "System" "." "getProperty" "(" "String" ")" ")" ".")
-    (ajc-split-line-4-complete-method
-     "new ByteArrayInputStream((\"y\" + System.getProperty(\"line.separator\")).")))
-  (should
-   (equal '("StringBuffer" "(" ")" ".")
-          (ajc-split-line-4-complete-method "new StringBuffer().")))
-  (should
-   (equal '("Obj" "(" "String" ")" ".")
-          (ajc-split-line-4-complete-method "new Obj(\"arg\").")))
-  (should
-   (equal '("(" "a" "+" "b" ")" ".")
-          (ajc-split-line-4-complete-method "new Obj((a + b).")))
-  (should (equal
-           '("Obj" "(" "(" "a" "+" "b" ")" "." "method" "(" ")" ")" ".")
-           (ajc-split-line-4-complete-method "new Obj((a + b).method()).")))
-  (should
-   (equal '("File" "(" "String" ")" ".")
-          (ajc-split-line-4-complete-method
-           "new FileInputStream(new File(\"file\").")))
-  (should
-   (equal '("ObjC" "(" ")" ".")
-          (ajc-split-line-4-complete-method
-           "new ObjA(new ObjB(new ObjC().")))
-  (should
-   (equal '("(" "String" "+" "String" ")" ".")
-          (ajc-split-line-4-complete-method
-           "(\"a\" + \"b\").")))
-  (should
-   (equal '("String" "." "trim" "(" ")" ".")
-          (ajc-split-line-4-complete-method
-           "\"foo\".trim().")))
-  (should
-   (equal '("message" "." "getBody" "(" ")" ".")
-          (ajc-split-line-4-complete-method
-           "    for (String element : message.getBody().")))
-  (should
-   (equal '("if" "(" "f" ".")
-          (ajc-split-line-4-complete-method
-           "if (!f.")))
+           "icon = new ImageIcon(icon.getImage().")))
   )
 
 (ert-deftest test-ajc-parse-splited-line-4-complete-method ()
@@ -234,6 +238,9 @@
           (ajc-extract-parenthesized-part-maybe '("a" "+" "b"))))
   (should
    (equal '("(" "a" "+" "b" ")" ".")
+          (ajc-extract-parenthesized-part-maybe '("(" "a" "+" "b" ")" "."))))
+  (should
+   (equal '("(" "a" "+" "b" ")" ".")
           (ajc-extract-parenthesized-part-maybe
            '("new" "Obj" "(" "(" "a" "+" "b" ")" "."))))
   (should
@@ -251,6 +258,10 @@
    (equal '("String" "." "trim" "(" ")" ".")
           (ajc-extract-parenthesized-part-maybe
            '("String" "." "trim" "(" ")" "."))))
+  (should
+   (equal '("icon" "." "getImage" "(" ")" ".")
+          (ajc-extract-parenthesized-part-maybe
+           '("ImageIcon" "(" "icon" "." "getImage" "(" ")" "."))))
   )
 
 (ert-deftest test-ajc-remove-unnecessary-heading-part ()
