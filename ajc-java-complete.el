@@ -1420,7 +1420,7 @@ they haven't been imported."
                              "[ \t\n\r]+"
                              "implements"
                              "[ \t\n\r]+"
-                             "\\([A-Z][A-Za-z0-9_, \t\n\r]+\\)" ; interface name
+                             "\\([A-Z][A-Za-z0-9_<>, \t\n\r]+\\)" ; interface name
                              "{"
                              ))
         (ret nil))
@@ -1430,7 +1430,7 @@ they haven't been imported."
         (while (re-search-forward intf-regexp nil t)
           (setq ret
                 (append (split-string (match-string-no-properties 1)
-                                      "[, \t\n\r]+" t)
+                                      "[,<> \t\n\r]+" t)
                         ret)))))
     ret))
 
