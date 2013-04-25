@@ -1404,6 +1404,10 @@ they haven't been imported."
         (setq matched-class-strings
               (append matched-class-strings
                       (ajc-find-out-class-by-extends-notation)))
+        ;; search for classname used in cast
+        (setq matched-class-strings
+              (append matched-class-strings
+                      (ajc-find-out-class-by-cast-notation)))
         ;; remove primitive type and remove duplicate item
         (delete-dups matched-class-strings)
         (setq matched-class-strings (delete "" matched-class-strings))
@@ -1413,6 +1417,21 @@ they haven't been imported."
                  (string-match "^\\(int\\|float\\|double\\|long\\|short\\|char\\|byte\\|void\\|boolean\\|return\\|public\\|static\\|private\\|protected\\|abstract\\|final\\|native\\|package\\|new\\)$" ele))
                matched-class-strings))
         matched-class-strings))))
+
+(defun ajc-find-out-class-by-cast-notation ()
+  "Find out class names used in cast statements."
+  (let ((case-fold-search nil)
+        (cast-regexp "(\\([A-Z][A-Za-z0-9_<>]+\\))")
+        (ret nil))
+    (save-excursion
+      (save-match-data
+        (goto-char (point-min))
+        (while (re-search-forward cast-regexp nil t)
+          (setq ret
+                (append (split-string (match-string-no-properties 1)
+                                      "[,<> \t\n\r]+" t)
+                        ret)))))
+    ret))
 
 (defun ajc-find-out-implemented-interfaces ()
   (let ((case-fold-search nil)
