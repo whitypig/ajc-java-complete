@@ -41,7 +41,7 @@
 
 (defun ajc-fqn-prefix ()
   (save-excursion
-    (when (re-search-backward "\\([[:space:]()@.<]\\|^\\)"
+    (when (re-search-backward "\\([[:space:]()@,<!]\\|^\\)"
                               (line-beginning-position)
                               t)
       (match-end 1))))

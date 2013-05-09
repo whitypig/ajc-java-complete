@@ -1239,6 +1239,7 @@ This should return, for example, (\"java.lang\" \"java.ref\")."
 with PREFIX-STRING."
   (let ((ret nil)
         (case-fold-search nil))
+    ;;(message "DEBUG: ajc-package-candidates called with prefix=%s" prefix-string)
     ;; add packages
     (setq ret (ajc-shrunk-matched-pkgs prefix-string))
     (let ((index_of_last_dot (string-match "\\.[a-zA-Z_0-9]*$" prefix-string))
@@ -1255,23 +1256,24 @@ with PREFIX-STRING."
 (defun ajc-fqn-candidates ()
   "Return candidates for FQN like prefix."
   ;;(message "DEBUG: ajc-fqn-candidates, ac-prefix=%s" ac-prefix)
-  (when (and ac-prefix (string-match "^[a-zA-Z][a-zA-Z0-9._]+" ac-prefix))
-    (or (ajc-package-candidates ac-prefix)
-        (mapcar (lambda (e)
-                  ;; e is a non-fqn name,
-                  ;; i.e. "assertTrue" not "org.junit.Assert.assertThat"
-                  (let ((cand (concat
-                               (replace-regexp-in-string "[^.]+\\.\\([^.]+\\)$"
-                                                         ""
-                                                         ac-prefix
-                                                         nil
-                                                         nil
-                                                         1)
-                               e)zp))
-                    (set-text-properties 0 (length cand) (text-properties-at 0 e) cand)
-                    cand))
-                (mapcar #'ajc-method-item-to-candidate
-                        (ajc-fqn-candidates-1 ac-prefix))))))
+  (let ((ret nil))
+    (when (and ac-prefix (string-match "^[a-zA-Z][a-zA-Z0-9._]+" ac-prefix))
+      (or (ajc-package-candidates ac-prefix)
+          (mapcar (lambda (e)
+                    ;; e is a non-fqn name,
+                    ;; i.e. "assertTrue" not "org.junit.Assert.assertThat"
+                    (let ((cand (concat
+                                 (replace-regexp-in-string "[^.]+\\.\\([^.]+\\)$"
+                                                           ""
+                                                           ac-prefix
+                                                           nil
+                                                           nil
+                                                           1)
+                                 e)))
+                      (set-text-properties 0 (length cand) (text-properties-at 0 e) cand)
+                      cand))
+                  (mapcar #'ajc-method-item-to-candidate
+                          (ajc-fqn-candidates-1 ac-prefix)))))))
 
 (defun ajc-fqn-candidates-1 (prefix)
   "Return candidates which begin with PREFIX.
@@ -1333,7 +1335,7 @@ they haven't been imported."
         (goto-char (point-min))
         ;; find out all statements of variable, for example
         ;; String name;      Map<String,<String,Ojbect>>[] map=
-        (while (search-forward-regexp "^[ \t]*\\(public\\|private\\|static\\|final\\|native\\|synchronized\\|transient\\|volatile\\|strictfp\\| \\|\t\\)*\\([A-Z]\\([a-zA-Z0-9_]\\| *\t*< *\t*\\| *\t*>\\| *\t*, *\t*\\| *\t*\\[ *\t*]\\)+\\)[ \t]+[a-zA-Z0-9_]+[ \t]*[;=]"
+        (while (search-forward-regexp "^[ \t]*\\(public\\|private\\|static\\|final\\|native\\|synchronized\\|transient\\|volatile\\|strictfp\\| \\|\t\\)*\\([A-Z]\\([a-zA-Z0-9_]\\| *\t*< *\t*\\| *\t*>\\| *\t*, *\t*\\| *\t*\\[ *\t*]\\)+\\)[ \t]+\\([a-zA-Z0-9_]+[, \t]*\\)+[;=]"
                                       (point-max)
                                       't)
           (setq matched-class-strings
@@ -1900,7 +1902,7 @@ in a source file, String will be returned."
         (index-of-var-in-line)
         (var-stack)
         (origin-pos (point))
-        (needle (concat "[[:space:]]+"
+        (needle (concat "[[:space:],]+"
                         variable-name
                         ajc-thing-after-varname-regexp))
         (case-fold-search nil))
@@ -1936,13 +1938,14 @@ in a source file, String will be returned."
   "Return type-name of VARIABLE-NAME by parsing VARIABLE-LINE-STRING."
   (let ((index-of-var-in-line nil)
         (var-stack nil)
-        (matched-class-name nil))
+        (matched-class-name nil)
+        (case-fold-search nil))
     (setq index-of-var-in-line
-          (string-match (concat "[ \t]+" variable-name "\\b") variable-line-string))
+          (string-match (concat "[, \t]+" variable-name "\\b") variable-line-string))
     ;; extract the string before variable name
     (setq variable-line-string
           (substring-no-properties variable-line-string 0 index-of-var-in-line))
-    (setq var-stack (split-string variable-line-string "[( \t.]" t))
+    (setq var-stack (split-string variable-line-string "[,( \t.]" t))
     ;;(message "DEBUG: ajc-parse-variable-line-string, var-stack=%s" var-stack)
     (let ((tmp-list))
       (dolist (ele var-stack)
@@ -1956,7 +1959,7 @@ in a source file, String will be returned."
     (let ((top (pop var-stack))
           (parse-finished nil))
       (while (and top (not parse-finished))
-        (when (string-match "[A-Z][a-zA-Z0-9_]*" top)
+        (when (string-match "^\\([a-z0-9.]+\\)*\\([A-Z][a-zA-Z0-9_]*\\)$" top)
           (setq matched-class-name top)
           ;; parse finished, exit the loop
           (setq parse-finished t))
@@ -1975,6 +1978,7 @@ in a source file, String will be returned."
               (setq e (pop var-stack)))
             (when e (push e var-stack))))
         (setq top (pop var-stack))))
+    ;;(message "DEBUG: ajc-parse-variable-line-string, class-name=%s" matched-class-name)
     matched-class-name))
 
 (defun ajc-line-has-typeinfo-p (varname line)
@@ -1987,6 +1991,7 @@ in a source file, String will be returned."
                       ))
         (exclude-regexp "return"))
     (and (string-match-p (concat type-regexp
+                                 "[[:alnum:][:space:],_]*"
                                  varname
                                  ajc-thing-after-varname-regexp
                                  )
