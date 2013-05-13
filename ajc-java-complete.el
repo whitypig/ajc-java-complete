@@ -2046,8 +2046,8 @@ get any candidates too, we needn't try to complete it."
     ;; stack-list is, for example, '("System" "." "out" "." "p"),
     ;; and ajc-complete-method-candidates-cache-stack-list is
     ;; '("System" "." "out" ".")
-    ;;(message "DEBUG: ajc-complete-method-is-available, line-string=%s" line-string)
-    ;;(message "DEBUG: ajc-complete-method-is-available, stack-list=%s" stack-list)
+    ;(message "DEBUG: ajc-complete-method-is-available, line-string=%s" line-string)
+    ;(message "DEBUG: ajc-complete-method-is-available, stack-list=%s" stack-list)
     (when (and ajc-complete-method-candidates-cache-stack-list
                (string-match (concat "^"
                                      (regexp-quote
@@ -2207,6 +2207,8 @@ this function will remove anything between ( and )  ,so only
       (setq line-string (replace-regexp-in-string "\\breturn\\b" "" line-string))
       ;; remove this keyword
       (setq line-string (replace-regexp-in-string "\\bthis\\b" "" line-string))
+      ;; remove case keyword
+      (setq line-string (replace-regexp-in-string "\\bcase\\b" "" line-string))
       ;; remove unary operators
       (setq line-string (replace-regexp-in-string "\\(\\+\\+\\|--\\|!\\)"
                                                   " "
