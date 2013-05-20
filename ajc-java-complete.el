@@ -769,14 +769,18 @@ The next completion is done without tag file FILENAME."
                         ajc-tag-file-list))))
   (when (> (length ajc-tag-file-list) 1)
     ;; let a user choose which tag file to unload
-    (and filename
-         (setq ajc-plain-method-tables
-               (delete (nth (position filename ajc-tag-file-list :test #'string=)
-                            ajc-plain-method-tables)
-                       ajc-plain-method-tables))
-         (setq ajc-tag-file-list
-               (delete filename ajc-tag-file-list))
-         (ajc-init t))))
+    (let* ((ix (position filename ajc-tag-file-list :test #'string=))
+           (tag-buffer (nth ix ajc-tag-buffer-list))
+           (sorted-class-buffer (get-buffer (nth ix ajc-sorted-class-buffer-name-list))))
+      (and filename
+           (setq ajc-plain-method-tables
+                 (delete (nth ix ajc-plain-method-tables)
+                         ajc-plain-method-tables))
+           (kill-buffer tag-buffer)
+           (kill-buffer sorted-class-buffer)
+           (setq ajc-tag-file-list
+                 (delete filename ajc-tag-file-list))
+           (ajc-init t)))))
 
 (defun ajc-update-tag-file (filename)
   "Update completion info from updated ajc tag file FILENAME."
