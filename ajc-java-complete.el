@@ -1335,12 +1335,48 @@ they haven't been imported."
         (goto-char (point-min))
         ;; find out all statements of variable, for example
         ;; String name;      Map<String,<String,Ojbect>>[] map=
-        (while (search-forward-regexp "^[ \t]*\\(public\\|private\\|static\\|final\\|native\\|synchronized\\|transient\\|volatile\\|strictfp\\| \\|\t\\)*\\([A-Z]\\([a-zA-Z0-9_]\\| *\t*< *\t*\\| *\t*>\\| *\t*, *\t*\\| *\t*\\[ *\t*]\\)+\\)[ \t]+\\([a-zA-Z0-9_]+[, \t]*\\)+[;=]"
-                                      (point-max)
-                                      't)
+        (while (search-forward-regexp
+                (concat
+                 "^[ \t]*"
+                 "(?"
+                 "\\(public\\|private\\|static\\|final\\|native\\|synchronized\\|"
+                 "transient\\|volatile\\|strictfp\\| \\|\t\\)*"
+                 ;; type name
+                 "\\([A-Z][a-zA-Z0-9_]+"
+                 ;; type parameters
+                 "\\(<[^;=()]+>\\)?"
+                 ;; square brackets for array type
+                 "\\(\\[]\\)*"
+                 "\\)"
+                 "[ \t]+"
+                 ;; variable name
+                 "\\([a-zA-Z0-9_]+[, ;=]+\\)+")
+                (point-max)
+                't)
           (setq matched-class-strings
                 (append matched-class-strings
                         (split-string (match-string-no-properties 2) split-char-regexp t))))
+        (goto-char (point-min))
+        ;; search for parenthesized type names, i.e.,
+        ;; search for `Iterator' in `for (Iterator<Elt> i = _var.iterator(); ...)'
+        (while (search-forward-regexp
+                (concat
+                 "("
+                 ;; type name
+                 "\\([A-Z][a-zA-Z0-9_]+"
+                 ;; type parameters
+                 "\\(<[^;=()]+>\\)?"
+                 ;; square brackets for array type
+                 "\\(\\[]\\)*"
+                 "\\)"
+                 "[ \t]+"
+                 ;; variable name
+                 "\\([a-zA-Z0-9_]+[, ;=]+\\)+")
+                (point-max)
+                't)
+          (setq matched-class-strings
+                (append matched-class-strings
+                        (split-string (match-string-no-properties 1) split-char-regexp t))))
         (goto-char (point-min))
         ;; find ClassName after "catch" keywords  for example :catch(IOException e)
         (while (search-forward-regexp "catch[ \t]*(\\([a-zA-Z0-9_]+\\)[ \t]+" (point-max) 't)
