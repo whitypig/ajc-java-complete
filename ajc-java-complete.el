@@ -2023,8 +2023,9 @@ in a source file, String will be returned."
 
 (defun ajc-line-has-typeinfo-p (varname line)
   "Return t if this LINE contains type name, or nil."
-  (let ((type-regexp (concat
-                      "\\([[:alpha:]][[:alnum:]]+[.]?\\)+"
+  (let ((case-fold-search nil)
+        (type-regexp (concat
+                      "\\([A-Z][[:alnum:]]+[.]?\\)+"
                       "\\(<[^=]*>\\)*"
                       "\\(\\[\\]\\)*"
                       "[[:space:]]+"
