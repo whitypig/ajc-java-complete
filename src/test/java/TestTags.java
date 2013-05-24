@@ -15,11 +15,16 @@ public class TestTags {
   private Class<?> _someClass;
   private ClassItem _someClassItem;
 
+  private Class<?> _enumClass;
+  private ClassItem _enumClassItem;
+
   @Before
   public void setUp() {
     _tags = new Tags();
     _someClass = ajc.somepackage.SomeClass.class;
     _someClassItem = new ClassItem(_someClass);
+    _enumClass = ajc.enumpackage.EnumTest.Enums.class;
+    _enumClassItem = new ClassItem(_enumClass);
   }
 
   @Test
@@ -99,6 +104,17 @@ public class TestTags {
                  "SomeClass", memberItems.get(0).getClassItem().getName());
     assertEquals("The typename of this field should be int",
                  "int", memberItems.get(0).getReturnType().getAlternativeString());
+  }
+
+  @Test
+  public void testNestedEnumsOk() throws Throwable {
+    List<MemberItem> memberItems = _tags.tagFields(_enumClassItem);
+    // this enum type has three enums
+    assertEquals("size of memberItems should be 3", 3, memberItems.size());
+    // check to see if its NOT ajc.enumpackage.EnumTest$Enums
+    assertEquals("The typename should be ajc.enumpackage.EnumTest.Enums",
+                 "ajc.enumpackage.EnumTest.Enums",
+                 memberItems.get(0).getReturnType().getAlternativeString());
   }
 
   @Test

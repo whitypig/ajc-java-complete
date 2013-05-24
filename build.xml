@@ -55,6 +55,7 @@
       <compilerarg value="-Xlint:unchecked"/>
       <include name="SomeClass.java"/>
       <include name="AnotherClass.java"/>
+      <include name="EnumTest.java"/>
       <classpath>
         <pathelement location="test"/>
       </classpath>
@@ -94,7 +95,7 @@
     </javac>
   </target>
 
-  <target name="compile.test" depends="resolve, compile.java">
+  <target name="compile.test" depends="compile.java">
     <mkdir dir="${target.classes.test.dir}"/>
     <javac encoding="utf-8" srcdir="${src.test.dir}" destdir="${target.classes.test.dir}"
            includeantruntime="false" fork="true">
@@ -112,7 +113,29 @@
     </javac>
   </target>
 
-  <target name="run.test" depends="compile.test">
+  <property name="testclass" value=""/>
+  <target name="run.test" depends="compile.test, make.someclass.jar">
+    <echo>${testclass}</echo>
+    <fail>
+      <condition>
+        <equals arg1="" arg2="${testclass}"/>
+      </condition>
+      No test class specified.
+    </fail>
+    <junit printsummary="true" haltonerror="true" haltonfailure="true" fork="true">
+      <formatter type="plain" usefile="false"/>
+      <test name="${testclass}"/>
+      <jvmarg value="-Duser.language=en"/>
+      <classpath>
+        <pathelement location="${target.classes.java.dir}"/>
+        <pathelement location="${target.classes.test.dir}"/>
+        <pathelement location="${junit.jar}"/>
+        <pathelement location="${someclass.jar}"/>
+      </classpath>
+    </junit>
+  </target>
+
+  <target name="run.test.all" depends="compile.test">
     <junit printsummary="true" fork="true" haltonerror="true" haltonfailure="true">
       <formatter type="plain" usefile="false"/>
       <test name="TestTags"/>

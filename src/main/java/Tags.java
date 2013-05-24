@@ -410,9 +410,10 @@ public class Tags {
   protected ClassItem tagClass(Class c) throws ApplicationException {
     checkClassToExclude(c);
     String pkgName = c.getPackage().getName();
-    if (c.isAnnotation() && c.getName().contains("$")) {
+    if ((c.isAnnotation() || c.isEnum()) && c.getName().contains("$")) {
       pkgName = c.getName().substring(0 , c.getName().lastIndexOf('$'));
     }
+
     PackageItem pkgItem = null;
     // check if pkgName is in list.
     for (int i = 0; i < _packages.size(); i++) {
@@ -506,7 +507,9 @@ public class Tags {
       returnType.setAlternativeString(clazz.getName());
       // do nothing
     } else if (clazz.isEnum()) {
-      returnType.setAlternativeString(clazz.getName());
+      // do replace `$' with `.'
+      // i.e. EnclosingClass$NestedEnum to EnclosingClass.NestedEnum
+      returnType.setAlternativeString(clazz.getName().replace('$', '.'));
     } else {
       for (ClassItem ci : _classes) {
         if (clazz.getName() != null && clazz.getName().equals(ci.getCls().getName())) {
@@ -532,9 +535,12 @@ public class Tags {
         continue;
       }
       Class fieldType = (Class)fields[i].getType();
+      // System.err.println(String.format("DEBUG: fields.getName=%s", fields[i].getName()));
+      // System.err.println(String.format("DEBUG: fieldType=%s", fieldType.getName()));
       MemberItem memItem = new MemberItem(fields[i], fields[i].getName(), cItem);
       memItem.setReturnType(getClassItemWrapper(fieldType));
       localMems.add(memItem);
+      // System.err.println("DEBUG: memItem=" + memItem.toString());
     }
     Collections.sort(localMems);
     return localMems;
