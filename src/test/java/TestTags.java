@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
 
 public class TestTags {
   private Tags _tags;
@@ -18,6 +19,12 @@ public class TestTags {
   private Class<?> _enumClass;
   private ClassItem _enumClassItem;
 
+  private Class<?> _enclosingClass;
+  private ClassItem _enclosingClassItem;
+
+  private Class<?> _nestedClass;
+  private ClassItem _nestedClassItem;
+
   @Before
   public void setUp() {
     _tags = new Tags();
@@ -25,6 +32,10 @@ public class TestTags {
     _someClassItem = new ClassItem(_someClass);
     _enumClass = ajc.enumpackage.EnumTest.Enums.class;
     _enumClassItem = new ClassItem(_enumClass);
+    _enclosingClass = ajc.somepackage.EnclosingClass.class;
+    _enclosingClassItem = new ClassItem(_enclosingClass);
+    _nestedClass = ajc.somepackage.EnclosingClass.NestedClass.class;
+    _nestedClassItem = new ClassItem(_nestedClass);
   }
 
   @Test
@@ -74,6 +85,16 @@ public class TestTags {
   }
 
   @Test
+  public void testTagConstructorsForNestedClassConstructorOk() throws Throwable {
+    List<MemberItem> memberItems = _tags.tagConstructors(_nestedClassItem);
+    assertEquals(1, memberItems.size());
+    MemberItem testee = memberItems.get(0);
+    assertNotNull(testee);
+    assertFalse(testee.toString(), testee.toString().contains("$"));
+    System.err.println(testee.toString());
+  }
+
+  @Test
   public void testTagMethodsOk() throws Throwable {
     List<MemberItem> memberItems = _tags.tagMethods(_someClassItem);
     ArrayList<String> methodNames = new ArrayList<>();
@@ -94,11 +115,36 @@ public class TestTags {
   }
 
   @Test
+  public void testTagMethosForAMethodReturningNestedClassObject() throws Throwable {
+    List<MemberItem> memberItems = _tags.tagMethods(_enclosingClassItem);
+    MemberItem testeeMethod = null;
+    for (MemberItem item : memberItems) {
+      if (item.getMethod().toString().contains("getNestedClassObject")) {
+        testeeMethod = item;
+        break;
+      }
+    }
+    assertNotNull(testeeMethod);
+    assertFalse("Name contains $ sign: " + testeeMethod.toString(),
+                testeeMethod.toString().contains("$"));
+  }
+
+  @Test
+  public void testTagMethodsInNestedEnumsOk() throws Throwable {
+    List<MemberItem> memberItems = _tags.tagMethods(_enumClassItem);
+    for (MemberItem item : memberItems) {
+      assertFalse(String.format("Method name=%s, returntype=%s:",
+                                item.getName(), item.getReturnType().getAlternativeString()),
+                  item.getReturnType().getAlternativeString().contains("$"));
+    }
+  }
+
+  @Test
   public void testTagFieldsOk() throws Throwable {
     List<MemberItem> memberItems = _tags.tagFields(_someClassItem);
     assertEquals("class SomeClass has only one public field",
                  1, memberItems.size());
-    assertEquals("The name should be CONSTAND",
+    assertEquals("The name should be CONSTANT",
                  "CONSTANT", memberItems.get(0).getName());
     assertEquals("The name of the class is SomeClass",
                  "SomeClass", memberItems.get(0).getClassItem().getName());

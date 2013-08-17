@@ -43,7 +43,6 @@ import java.util.regex.*;
 import java.util.jar.*;
 import java.util.zip.*;
 
-
 /**
  * Make a tags table from the class files in a classpath.
  * The classpath is obtained from the property <code>java.class.path</code>
@@ -410,8 +409,16 @@ public class Tags {
   protected ClassItem tagClass(Class c) throws ApplicationException {
     checkClassToExclude(c);
     String pkgName = c.getPackage().getName();
-    if ((c.isAnnotation() || c.isEnum()) && c.getName().contains("$")) {
-      pkgName = c.getName().substring(0 , c.getName().lastIndexOf('$'));
+
+    // todo The following if statement has a problem.
+    // How should we handle a nested class and its package name?
+    // For now, enclosing class names are included in pakcage name,
+    // but i think there are few times when you need to instantiate objects
+    // of a nested class somewhere other than in the enclosing class.
+    // So I suppose we don't need to deal with nested classes.
+    if (c.getName().contains("$")) {
+      int ix = c.getName().lastIndexOf('$');
+      pkgName = c.getName().replaceAll("\\$", ".").substring(0, ix);
     }
 
     PackageItem pkgItem = null;
@@ -507,9 +514,7 @@ public class Tags {
       returnType.setAlternativeString(clazz.getName());
       // do nothing
     } else if (clazz.isEnum()) {
-      // do replace `$' with `.'
-      // i.e. EnclosingClass$NestedEnum to EnclosingClass.NestedEnum
-      returnType.setAlternativeString(clazz.getName().replace('$', '.'));
+      returnType.setAlternativeString(clazz.getName());
     } else {
       for (ClassItem ci : _classes) {
         if (clazz.getName() != null && clazz.getName().equals(ci.getCls().getName())) {
@@ -554,6 +559,10 @@ public class Tags {
       String name = methods[i].getName();
       if (name.contains(".")) {
         name = name.substring(name.lastIndexOf(".") + 1);
+      }
+      // replace `$' with `.'
+      if (name.contains("$")) {
+        name = name.replaceAll("\\$", ".");
       }
       MemberItem memItem = new MemberItem(methods[i], name, cItem);
       Class[] params = methods[i].getParameterTypes();
@@ -905,7 +914,7 @@ class ClassItemWrapper {
 
   public void setClassItem(ClassItem cItem) { _cItem = cItem; }
   public void setAlternativeString(String alternativeString ) {
-    _alternativeString = alternativeString;
+    _alternativeString = alternativeString.replaceAll("\\$", ".");
   }
 }
 

@@ -928,7 +928,12 @@
   (should
    (ajc-line-has-typeinfo-p
     "pair"
-    "  String[] pair = elements.split(\";\");")))
+    "  String[] pair = elements.split(\";\");"))
+  (should
+   (null
+    (ajc-line-has-typeinfo-p
+     "memberItems"
+     "assertEquals(\"size of memberItems should be 3\", 3, memberItems.size());"))))
 
 (ert-deftest test-ajc-rindex ()
   (should (= 5 (ajc-rindex "abcdef" ?f)))
