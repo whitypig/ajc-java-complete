@@ -632,17 +632,17 @@
    (lambda ()
      (should
       (equal
-       '(("SomeClass" 0 7 21 39))
+       '(("SomeClass" 0 10 81 99))
        (ajc-find-out-matched-class-item "ajc.somepackage"
                                         "So")))
      (should
       (equal
-       '(("AnotherClass" 0 7 10 21) ("SomeClass" 0 7 21 39))
+       '(("AnotherClass" 0 10 59 70) ("EnclosingClass" 0 10 70 81) ("SomeClass" 0 10 81 99))
        (ajc-find-out-matched-class-item "ajc.somepackage"
                                         nil)))
      (should
       (equal
-       '(("SomeClass" 0 7 21 39))
+       '(("SomeClass" 0 10 81 99))
        (ajc-find-out-matched-class-item "ajc.somepackage"
                                         "SomeClass"
                                         t)))
@@ -653,7 +653,14 @@
                                         "Test"
                                         t)))
      (should
-      (null (ajc-find-out-matched-class-item nil nil))))))
+      (null (ajc-find-out-matched-class-item nil nil)))
+     ;; case where package name is nil
+     (should
+      (equal
+       '(("SomeClass" 0 10 81 99))
+       (ajc-find-out-matched-class-item nil
+                                        "SomeC")))
+     )))
 
 (ert-deftest test-ajc-complete-constructor ()
   (test-ajc-fixture

@@ -1033,7 +1033,11 @@ returned."
               (concat "^" (regexp-quote class-prefix) "`")
             (concat "^" (regexp-quote class-prefix))))
          (matched-pkg-items (and package-name (ajc-find-out-matched-pkg-item package-name t))))
-    (when matched-pkg-items
+    (cond
+     ((and (> (length class-prefix) 0) (not package-name))
+      ;; case where package-name is null and class-prefix is specified
+      (ajc-find-out-matched-class-item-without-package-prefix class-prefix exactly_match))
+     (matched-pkg-items
       (loop for matched-pkg-item in matched-pkg-items
             for index = (nth 1 matched-pkg-item)
             for line-num = (nth 2 matched-pkg-item)
@@ -1054,7 +1058,9 @@ returned."
                        (push (ajc-make-class-item current-line-string (nth 1 matched-pkg-item))
                              return-list))
                      (incf line-num))))
-            finally (return (nreverse return-list))))))
+            finally (return (nreverse return-list))))
+     (t
+      nil))))
 
 (defun ajc-make-class-item (line-string index)
   "Return class item of form (classname index start-line end-line) by splitting LINE-STRING."
@@ -1894,7 +1900,7 @@ class."
             (setq return-list (nreverse return-list)))
         (setq return-list
               (if package-name
-                  (ajc-find-out-matched-class-item class-preix package-name)
+                  (ajc-find-out-matched-class-item class-prefix package-name)
                 (ajc-find-out-matched-class-item-without-package-prefix class-prefix))))
       (when (> (length return-list) 0)
         ;; if find matched names, update cache
