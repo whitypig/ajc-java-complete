@@ -1404,7 +1404,7 @@ they haven't been imported."
                         "\\|\\( *\t*> *\t*\\)\\|\\( *\t*, *\t*\\)"
                         "\\|\\( *\t*\\[ *\t*\\)\\|\\(]\\)\\)+\\)"
                         ;; method name and parameters
-                        "[ \t\n\r]+[a-zA-Z0-9_]+[ \t]*(\\(.*\\))"
+                        "[ \t\n\r]+[a-zA-Z0-9_]+[ \t]*(\\([^)]*\\))"
                         "[ \t\n\r]*"
                         "\\(throws[ \t]+\\([a-zA-Z0-9_, \t\n]*\\)\\)?"
                         "[ \t\n]*[{;]"
@@ -1420,18 +1420,11 @@ they haven't been imported."
                           (split-string returns "\\(,\\|<\\|>\\|]\\|\\[\\| \\|\t\\)" t)))
             ;; handle methods parameters
             ;; find out 'Map String Ojbect User' from "Map<String,Object> map,User user"
-            (while (and params (> (length params) 0))
-              (if (string-match "\\([a-zA-Z0-9_]\\|\\( *\t*< *\t*\\)\\|\\( *\t*>\\)\\|\\( *\t*, *\t*\\)\\|\\( *\t*\\[ *\t*\\)\\|\\(]\\)\\)+" params)
-                  (progn (setq matched-class-strings
-                               (append matched-class-strings
-                                       (split-string (match-string-no-properties 0 params)
-                                                     split-char-regexp
-                                                     t)))
-                         (string-match "[ \t]*[a-zA-Z0-9_]+[ \t,]?" params (match-end 0))
-                         (setq params (substring-no-properties params (match-end 0))))
-                (setq params nil)))
+            (when (stringp params)
+              (nconc matched-class-strings
+                     (ajc-parse-param-string params)))
             ;; handle throws Exception1,Exception2,
-            ;;we will exatract Exception1 Exception2 from throws sentence
+            ;; we will exatract Exception1 Exception2 from throws sentence
             (when exception
               (setq matched-class-strings
                     (append matched-class-strings
@@ -1465,6 +1458,13 @@ they haven't been imported."
                  (string-match "^\\(int\\|float\\|double\\|long\\|short\\|char\\|byte\\|void\\|boolean\\|return\\|public\\|static\\|private\\|protected\\|abstract\\|final\\|native\\|package\\|new\\)$" ele))
                matched-class-strings))
         matched-class-strings))))
+
+(defun ajc-parse-param-string (string)
+  "Parse method-parameter STRING and return a list of class names in STRING.
+Ignore primitive types and fully-qualified class names."
+  (let ((case-fold-search nil))
+    (remove-if-not (lambda (elt) (string-match "^[A-Z]" elt))
+                   (split-string string "[,<> ]" t))))
 
 (defun ajc-find-out-class-by-cast-notation ()
   "Find out class names used in cast statements."

@@ -1141,3 +1141,11 @@
     (string=
      "getStringArray(${1:java.util.ArrayList})$0"
      (ajc-method-to-yasnippet-template method-item))))
+
+(ert-deftest test-ajc-parse-param-string ()
+  (should
+   (equal '("Map" "String" "Object" "User")
+          (ajc-parse-param-string "Map<String,Object> map,User user")))
+  (should
+   (equal '("Component" "Graphics")
+          (ajc-parse-param-string "final Component c, Graphics g, int x, int y"))))
