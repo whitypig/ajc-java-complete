@@ -1464,7 +1464,7 @@ they haven't been imported."
 Ignore primitive types and fully-qualified class names."
   (let ((case-fold-search nil))
     (remove-if-not (lambda (elt) (string-match "^[A-Z]" elt))
-                   (split-string string "[,<> ]" t))))
+                   (split-string string "[][,<> ]" t))))
 
 (defun ajc-find-out-class-by-cast-notation ()
   "Find out class names used in cast statements."
@@ -1980,14 +1980,23 @@ in a source file, String will be returned."
     (and (stringp variable-line-string)
          (ajc-parse-variable-line-string variable-name variable-line-string))))
 
+(defun ajc-last-string-match (regexp string)
+  "Return index of last occurrence of REGEXP in STRING, or nil."
+  (loop with ix = -1
+        with ret = nil
+        while (setq ix (string-match regexp string (1+ ix)))
+        do (setq ret ix)
+        finally (return ret)))
+
 (defun ajc-parse-variable-line-string (variable-name variable-line-string)
-  "Return type-name of VARIABLE-NAME by parsing VARIABLE-LINE-STRING."
+  "Return type-name of VARIABLE-NAME by parsing VARIABLE-LINE-STRING.
+Ignores primitive typename such as int, double, etc."
   (let ((index-of-var-in-line nil)
         (var-stack nil)
         (matched-class-name nil)
         (case-fold-search nil))
     (setq index-of-var-in-line
-          (string-match (concat "[, \t]+" variable-name "\\b") variable-line-string))
+          (ajc-last-string-match (concat "[, \t]+" variable-name "\\b") variable-line-string))
     ;; extract the string before variable name
     (setq variable-line-string
           (substring-no-properties variable-line-string 0 index-of-var-in-line))
@@ -2005,7 +2014,7 @@ in a source file, String will be returned."
     (let ((top (pop var-stack))
           (parse-finished nil))
       (while (and top (not parse-finished))
-        (when (string-match "^\\([a-z0-9.]+\\)*\\([A-Z][a-zA-Z0-9_]*\\)$" top)
+        (when (string-match "^\\([a-z0-9.]+\\)*\\([A-Z][a-zA-Z0-9_]*\\)\\(\\[\\]\\)*$" top)
           (setq matched-class-name top)
           ;; parse finished, exit the loop
           (setq parse-finished t))

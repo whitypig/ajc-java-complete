@@ -961,31 +961,38 @@
       (null (ajc-get-class-item-by-fqn "foo"))))))
 
 (ert-deftest test-ajc-parse-variable-line-string ()
+  ;; (should
+  ;;  (string= "HashMap"
+  ;;           (ajc-parse-variable-line-string
+  ;;            "event"
+  ;;            "    HashMap<String, String> event = new HashMap<String, String>();")))
+  ;; (should
+  ;;  (string= "AuctionEventListener"
+  ;;           (ajc-parse-variable-line-string
+  ;;            "_listener"
+  ;;            "  private AuctionEventListener _listener;")))
+  ;; (should
+  ;;  (string= "Chat"
+  ;;           (ajc-parse-variable-line-string
+  ;;            "_notToBeGCd"
+  ;;            "  @SuppressWarnings(\"unused\") private Chat _notToBeGCd;")))
+  ;; (should
+  ;;  (null (ajc-parse-variable-line-string
+  ;;         "i"
+  ;;         "int i")))
+  ;; (should
+  ;;  (string= "String[]"
+  ;;           (ajc-parse-variable-line-string
+  ;;            "pair"
+  ;;            "String[] pair = element.split(\":\");")))
+
+  ;; case where a variable name is same as a method name
   (should
-   (string= "HashMap"
+   (string= "MetaMessage"
             (ajc-parse-variable-line-string
-             "event"
-             "    HashMap<String, String> event = new HashMap<String, String>();")))
-  (should
-   (string= "AuctionEventListener"
-            (ajc-parse-variable-line-string
-             "_listener"
-             "  private AuctionEventListener _listener;")))
-  (should
-   (string= "Chat"
-            (ajc-parse-variable-line-string
-             "_notToBeGCd"
-             "  @SuppressWarnings(\"unused\") private Chat _notToBeGCd;")))
-  (should
-   (string= "int"
-            (ajc-parse-variable-line-string
-             "i"
-             "int i")))
-  (should
-   (string= "String[]"
-            (ajc-parse-variable-line-string
-             "pair"
-             "String[] pair = element.split(\":\");"))))
+             "meta"
+             "  public void meta(MetaMessage meta) {")))
+  )
 
 
 (ert-deftest test-ajc-build-plain-method-table-1 ()
@@ -1148,4 +1155,23 @@
           (ajc-parse-param-string "Map<String,Object> map,User user")))
   (should
    (equal '("Component" "Graphics")
-          (ajc-parse-param-string "final Component c, Graphics g, int x, int y"))))
+          (ajc-parse-param-string "final Component c, Graphics g, int x, int y")))
+  (should
+   (equal '("String")
+          (ajc-parse-param-string "String[] args")))
+  (should
+   (equal '("String")
+          (ajc-parse-param-string "String[][][][] args"))))
+
+(ert-deftest test-ajc-last-string-match ()
+  (should
+   (equal 0
+          (ajc-last-string-match "a" "abc")))
+  (should
+   (equal 10
+          (ajc-last-string-match "c"
+                                 "a b c a b c")))
+  (should
+   (equal 28
+          (ajc-last-string-match (concat "[, \t]+" "meta" "\\b")
+                                 "public void meta(MetaMessage meta) {"))))
