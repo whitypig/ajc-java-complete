@@ -2047,7 +2047,7 @@ Ignores primitive typename such as int, double, etc."
                       ))
         (exclude-regexp "return"))
     (and (string-match-p (concat type-regexp
-                                 "[[:alnum:][:space:],_]*"
+                                 "[[:alnum:][:space:],_=]*"
                                  varname
                                  ajc-thing-after-varname-regexp
                                  )
