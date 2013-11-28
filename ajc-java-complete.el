@@ -1281,6 +1281,7 @@ with PREFIX-STRING."
                                                            1)
                                  e)))
                       (set-text-properties 0 (length cand) (text-properties-at 0 e) cand)
+                      (add-text-properties 0 (length cand) '(fqn t) cand)
                       cand))
                   (mapcar #'ajc-method-item-to-candidate
                           (ajc-fqn-candidates-1 ac-prefix)))))))
@@ -1580,47 +1581,48 @@ using `y-or-n-p' to ask user to confirm."
         (use-dialog-box nil)
         (last-nonmenu-event nil)
         (case-fold-search nil))
-    (cond ((and import-class-items-list (> (length import-class-items-list) 0))
-           (setq import-class-buffer (switch-to-buffer-other-window import-class-buffer t))
-           (setq java-window (get-buffer-window java-buffer))
-           (setq import-class-window (get-buffer-window import-class-buffer))
-           ;; show maybe imported Class in a new buffer
-           (with-current-buffer import-class-buffer
-             (delete-region (point-min) (point-max))
-             (dolist (ele import-class-items-list)
-               (insert (concat "[ ]  "
-                               (car (ajc-split-pkg-item-by-pkg-ln (nth 1 ele)
-                                                                  (nth 2 ele)))
-                               "."
-                               (car ele)
-                               "\n")))
-             (insert "  ")         ; insert empty line at end of buffer
-             (goto-char (1+ (point-min)))
-             (dolist (ele import-class-items-list)
-               ;; ask user whether to import the Class
-               (beginning-of-line)
-               (forward-char 1)
-               (when (y-or-n-p (concat "import " (car ele) "? "))
-                 (add-to-list 'user-confirmed-class-items-list ele)
-                 (delete-char 1)
-                 (insert "*"))
-               (forward-line 1)
-               (forward-char 1)))
-           ;; delete *import-java-class* buffer and window
-           (delete-window import-class-window)
-           (kill-buffer import-class-buffer)
-           (when user-confirmed-class-items-list
-             (with-current-buffer java-buffer
-               (ajc-insert-import-at-head-of-source-file-without-confirm
-                user-confirmed-class-items-list))
-             (message "Finished importing.")
-             (ajc-sort-import-lines))
-           user-confirmed-class-items-list)
-          ((null import-class-items-list)
-           ;; do nothing
-          )
-          (t
-           (message "No class need import.")))))
+    (save-window-excursion
+      (cond ((and import-class-items-list (> (length import-class-items-list) 0))
+             (setq import-class-buffer (switch-to-buffer-other-window import-class-buffer t))
+             (setq java-window (get-buffer-window java-buffer))
+             (setq import-class-window (get-buffer-window import-class-buffer))
+             ;; show maybe imported Class in a new buffer
+             (with-current-buffer import-class-buffer
+               (delete-region (point-min) (point-max))
+               (dolist (ele import-class-items-list)
+                 (insert (concat "[ ]  "
+                                 (car (ajc-split-pkg-item-by-pkg-ln (nth 1 ele)
+                                                                    (nth 2 ele)))
+                                 "."
+                                 (car ele)
+                                 "\n")))
+               (insert "  ")         ; insert empty line at end of buffer
+               (goto-char (1+ (point-min)))
+               (dolist (ele import-class-items-list)
+                 ;; ask user whether to import the Class
+                 (beginning-of-line)
+                 (forward-char 1)
+                 (when (y-or-n-p (concat "import " (car ele) "? "))
+                   (add-to-list 'user-confirmed-class-items-list ele)
+                   (delete-char 1)
+                   (insert "*"))
+                 (forward-line 1)
+                 (forward-char 1)))
+             ;; delete *import-java-class* buffer and window
+             (delete-window import-class-window)
+             (kill-buffer import-class-buffer)
+             (when user-confirmed-class-items-list
+               (with-current-buffer java-buffer
+                 (ajc-insert-import-at-head-of-source-file-without-confirm
+                  user-confirmed-class-items-list))
+               (message "Finished importing.")
+               (ajc-sort-import-lines))
+             user-confirmed-class-items-list)
+            ((null import-class-items-list)
+             ;; do nothing
+             )
+            (t
+             (message "No class need import."))))))
 
 (defun ajc-search-java-source-keyword ()
   "Return position where java keyword is found, or nil if "

@@ -14,7 +14,20 @@
          template-type)
     (when yasnippet-template
       (setq template-type (get-text-property 0 'template-type last-complete-string))
-      (delete-char (- 0 (length last-complete-string)))
+      (cond
+       ((get-text-property 0 'fqn last-complete-string)
+        (let* ((ix (string-match "(" last-complete-string))
+               (index-of-last-dot (position ?. (substring-no-properties last-complete-string
+                                                                        0
+                                                                        ix)
+                                            :from-end t))
+               (len-to-delete (and index-of-last-dot
+                                   (length (substring-no-properties last-complete-string
+                                                                    index-of-last-dot)))))
+          (when len-to-delete
+            (delete-char (- (1- len-to-delete))))))
+       (t
+        (delete-char (- 0 (length last-complete-string)))))
       (cond
        ((equal template-type 'method)
         ;;yas0.8  yas/expand-snippet renamed to yas-expand-snippet
@@ -90,7 +103,8 @@
 (ac-define-source ajc-fqn
   '((candidates . ajc-fqn-candidates)
     (prefix . ajc-fqn-prefix)
-    (cache)))
+    (cache)
+    (action . ajc-expand-yasnippet-template-with-ac)))
 
 (ac-define-source ajc-plain-method
   '((candidates . ajc-plain-method-candidates)
