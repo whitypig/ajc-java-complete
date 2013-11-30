@@ -13,3 +13,7 @@ test/CheckFileExists.java
 test/*
 TODO.txt
 memo.txt
+/src/main/java/TagsClass.java
+/src/test/java/TestTagsClass.java
+/src/test/java/dummy.ajc.tags
+/src/test/java/sometagname.ajc.tags
