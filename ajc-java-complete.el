@@ -1309,6 +1309,13 @@ return \"PI\"."
                                 package-name
                                 class-name
                                 t)))))
+    (unless class-item
+      (when (string-match "[A-Z][a-zA-Z_0-9]+\\.class\\.\\([^.]*\\)" prefix)
+        ;; PREFIX is like "SomeClass.class.", so we use the class-item
+        ;; of java.lang.Class
+        (setq class-item (car (ajc-find-out-matched-class-item "java.lang" "Class" t))
+              member-prefix (match-string-no-properties 1 prefix))))
+    ;; (message "DEBUG: ajc-fqn-candidates-1, prefix=%s" prefix)
     ;; (message "DEBUG: ajc-fqn-candidates-1, package-name=%s" package-name)
     ;; (message "DEBUG: ajc-fqn-candidates-1, class-name=%s" class-name)
     ;; (message "DEBUG: ajc-fqn-candidates-1, member-prefix=%s" member-prefix)
