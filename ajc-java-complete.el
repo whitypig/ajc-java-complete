@@ -1713,7 +1713,7 @@ using `y-or-n-p' to ask user to confirm."
       (while (re-search-forward "^import.*" nil t)
         (or beg-pos (setq beg-pos (line-beginning-position)))
         (setq end-pos (line-end-position))))
-    (sort-lines nil beg-pos end-pos)
+    (ajc-sort-region-preserving-empty-lines beg-pos end-pos)
     ;; if there is no empty line between import lines and the following code,
     ;; we insert an empty line there.
     (save-excursion
@@ -1721,6 +1721,22 @@ using `y-or-n-p' to ask user to confirm."
       (forward-line 1)
       (unless (re-search-forward "^$" (line-end-position) t)
         (open-line 1)))))
+
+(defun ajc-sort-region-preserving-empty-lines (beg end)
+  "Sort region preserving empty lines"
+  (if (save-excursion
+        (goto-char beg)
+        (not (re-search-forward "^$" end t)))
+      ;; no empty line between beg and end
+      (sort-lines nil beg end)
+    (let ((beg-pos beg))
+      (save-excursion
+        (goto-char beg)
+        (while (re-search-forward "^$" end t)
+          (sort-lines nil beg-pos (point))
+          (goto-char (1+ (point)))
+          (setq beg-pos (point)))
+        (sort-lines nil beg-pos (point))))))
 
 (defun ajc-find-out-import-line ()
   "Return a list of import statement lines.
