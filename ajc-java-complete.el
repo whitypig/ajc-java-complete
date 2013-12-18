@@ -2267,7 +2267,13 @@ this function will remove anything between ( and )  ,so only
                     (push e reverse-current-line-split-list)))
             (push ele stack-list)))
         (setq ele (pop reverse-current-line-split-list)))
-      (setq stack-list stack-list))))
+      (setq stack-list (ajc-remove-java-keywords stack-list)))))
+
+(defun ajc-remove-java-keywords (lst)
+  (let ((keywords (ajc-java-keywords-candidates)))
+    (remove-if (lambda (s)
+                 (member s keywords))
+               lst)))
 
 (defun ajc-split-line-4-complete-method (line-string)
   "Split LINE-STRING to small items. For example,
