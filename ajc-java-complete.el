@@ -1636,7 +1636,7 @@ using `y-or-n-p' to ask user to confirm."
   (save-excursion
     (goto-char (point-min))
     (re-search-forward
-     (concat "\\(\\b\\(class\\|interface\\|enum\\)[ \t]+[a-zA-Z0-9_]+[ \t\n]*"
+     (concat "\\(\\b\\(class\\|interface\\|enum\\)[ \t]+[a-zA-Z0-9_<>]+[ \t\n]*"
              "\\({\\|extends\\|implements\\)\\)")
      nil
      t)))
@@ -1752,7 +1752,7 @@ return a list of each line string excluding keyword 'import'."
                (re-search-forward
                 (concat
                  "\\("
-                 "\\b\\(class\\|interface\\)[ \t]+[a-zA-Z0-9_]+[\n \t]*"
+                 "\\b\\(class\\|interface\\)[ \t]+[a-zA-Z0-9_]+\\(<[0-9A-Za-z_<> ]+>\\)?[\n \t]*"
                  "\\({\\|extends\\|implements\\)"
                  "\\)")
                 nil
